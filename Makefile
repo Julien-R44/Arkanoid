@@ -1,4 +1,5 @@
 NAME	= arkanoid
+UNAME_S := $(shell uname -s)
 DEBUG	= yes
 ifeq ($(DEBUG),yes)
 	FLAGS=-Wall -Wextra -Werror
@@ -17,10 +18,14 @@ INC		= arkanoid.h
 SRCS	= $(addprefix $(SRCDIR), $(SRC))
 OBJS	= $(addprefix $(OBJDIR), $(OBJ))
 INCS	= $(addprefix $(INCDIR), $(INC))
-LIBFLAG = -L./libft/ -lft -L./glfw/src/ -lglfw3 -framework Cocoa \
+ifeq ($(UNAME_S),Linux)
+	LIBFLAG = -L./libft/ -lft -L./glfw/src -lglfw3 -lGL -lGLU -lglut -lX11 -lXxf86vm -lpthread -ldl -lm -lXi -lXrandr -lXcursor -lXinerama
+endif
+ifeq ($(UNAME_S),Darwin)
+	LIBFLAG = -L./libft/ -lft -L./glfw/src/ -lglfw3 -framework Cocoa \
 	-framework OpenGL -framework IOKit -framework CoreVideo \
 	-framework GLUT
-
+endif
 .SILENT:
 
 all: $(NAME)
@@ -39,7 +44,7 @@ endif
 	echo "\\033[1;34mGenerating objects... Please wait.\\033[0;39m"
 	git submodule init
 	git submodule update
-	cd glfw/ ; ~/.brew/bin/cmake .
+	cd glfw/ && cmake . ;
 	make -C glfw/
 	gcc $(FLAGS) -c $(SRCS) $(LDFLAGS) -Wno-deprecated
 	mkdir -p $(OBJDIR)
